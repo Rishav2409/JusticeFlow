@@ -1,0 +1,279 @@
+@import 'tailwindcss';
+
+@theme {
+  /* =====================================================
+     JUSTICEFLOW COLOR SYSTEM
+     ===================================================== */
+
+  /* Primary Orange */
+  --color-primary-50: #FFF7F0;
+  --color-primary-100: #FDE8D7;
+  --color-primary-200: #F7C9A5;
+  --color-primary-300: #F0A46F;
+  --color-primary-400: #E47C3B;
+  --color-primary-500: #C65A16;
+  --color-primary-600: #A94B12;
+  --color-primary-700: #873C0E;
+  --color-primary-800: #5B2A12;
+  --color-primary-900: #2B170D;
+
+  /* Status Colors */
+  --color-eligible: #4F8A62;
+  --color-eligible-bg: #EEF7F0;
+
+  --color-approaching: #B97820;
+  --color-approaching-bg: #FFF6E8;
+
+  --color-not-eligible: #B94343;
+  --color-not-eligible-bg: #FDF0F0;
+
+  --color-excluded: #B94343;
+  --color-excluded-bg: #FDF0F0;
+
+  /* JusticeFlow */
+  --color-justice-white: #FFFFFF;
+  --color-justice-background: #FFFFFF;
+
+  --color-justice-brown: #2B170D;
+  --color-justice-brown-light: #4A2A1A;
+
+  --color-justice-card: #FFF9F5;
+  --color-justice-card-light: #FFF4EC;
+
+  --color-justice-border: #D8B9A0;
+
+  --color-justice-text: #2B170D;
+  --color-justice-secondary: #5E4B40;
+  --color-justice-muted: #806F64;
+
+  --color-justice-accent: #C65A16;
+  --color-justice-accent-hover: #E06B1F;
+
+  --color-justice-red: #B94343;
+}
+
+
+/* =====================================================
+   GLOBAL BASE
+   ===================================================== */
+
+html {
+  background: #FFFFFF;
+
+  /* GLOBAL BASE FONT = 19px */
+  font-size: 19px;
+}
+
+body {
+  margin: 0;
+  background: #FFFFFF;
+  color: #2B170D;
+
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+
+  /* GLOBAL FONT SIZE */
+  font-size: 19px;
+
+  /* Comfortable reading */
+  line-height: 1.65;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* =====================================================
+   TEXT SELECTION
+   ===================================================== */
+
+::selection {
+  background: #C65A16;
+  color: #FFFFFF;
+}
+
+
+/* =====================================================
+   SCROLLBAR
+   ===================================================== */
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5EDE7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D8B9A0;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C65A16;
+}
+
+
+/* =====================================================
+   FORM ELEMENTS
+   ===================================================== */
+
+input,
+textarea,
+select {
+  font-family: inherit;
+
+  /* FORM FONT = 19px */
+  font-size: 19px;
+
+  line-height: 1.5;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #806F64;
+  opacity: 1;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+button {
+  font-family: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   LINKS
+   ===================================================== */
+
+a {
+  color: inherit;
+}
+
+
+/* =====================================================
+   GLOBAL HEADINGS
+   ===================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #2B170D;
+  line-height: 1.25;
+}
+
+
+/* =====================================================
+   JUSTICEFLOW FONT OVERRIDES
+   ===================================================== */
+
+/* Small text → approximately 15px */
+.text-xs {
+  font-size: 0.9375rem !important;
+  line-height: 1.5 !important;
+}
+
+
+/* Small/normal text → approximately 17px */
+.text-sm {
+  font-size: 1.0625rem !important;
+  line-height: 1.55 !important;
+}
+
+
+/* Normal text → approximately 19px */
+.text-base {
+  font-size: 1.1875rem !important;
+  line-height: 1.6 !important;
+}
+
+
+/* Large text → approximately 21px */
+.text-lg {
+  font-size: 1.3125rem !important;
+  line-height: 1.5 !important;
+}
+
+
+/* Extra large → approximately 23px */
+.text-xl {
+  font-size: 1.4375rem !important;
+  line-height: 1.35 !important;
+}
+
+
+/* =====================================================
+   TABLE READABILITY
+   ===================================================== */
+
+table {
+  font-size: 19px;
+}
+
+th {
+  line-height: 1.4;
+}
+
+td {
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   INPUT READABILITY
+   ===================================================== */
+
+input,
+textarea,
+select {
+  min-height: 50px;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+  html {
+    font-size: 17px;
+  }
+
+  body {
+    font-size: 17px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 17px;
+  }
+
+  table {
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "nyayaflow-backend",
+  "version": "1.0.0",
+  "description": "NyayaFlow Legal-Aid Case Screening Backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/eligibilityEngine.test.js",
+    "seed": "node src/database/seed.js",
+    "seed:cases": "node src/database/seedCases.js"
+  },
+  "dependencies": {
+    "sql.js": "^1.11.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  }
+}

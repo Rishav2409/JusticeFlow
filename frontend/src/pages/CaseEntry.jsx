@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OffenceSearch from '../components/OffenceSearch';
 import { caseService } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 const CaseEntry = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [formData, setFormData] = useState({
     case_number: '',
@@ -171,12 +173,11 @@ const CaseEntry = () => {
           <div>
 
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#2B170D]">
-              New Case Screening
+              {t('newCase')}
             </h1>
 
             <p className="mt-3 text-base text-[#5E4B40] max-w-2xl leading-relaxed">
-              Enter case, offence and custody information to perform
-              preliminary statutory screening.
+              Enter case, offence and custody information to register and perform statutory screening.
             </p>
 
           </div>
@@ -276,7 +277,7 @@ const CaseEntry = () => {
             <div>
 
               <label className={labelClass}>
-                Case ID <span className="text-[#B94343]">*</span>
+                {t('caseNumber')} <span className="text-[#B94343]">*</span>
               </label>
 
               <input
@@ -296,8 +297,7 @@ const CaseEntry = () => {
             <div>
 
               <label className={labelClass}>
-                Prisoner / Applicant Name{' '}
-                <span className="text-[#B94343]">*</span>
+                {t('prisonerName')} <span className="text-[#B94343]">*</span>
               </label>
 
               <input
@@ -317,7 +317,7 @@ const CaseEntry = () => {
             <div>
 
               <label className={labelClass}>
-                FIR Number
+                {t('firNumber')}
               </label>
 
               <input
@@ -336,7 +336,7 @@ const CaseEntry = () => {
             <div>
 
               <label className={labelClass}>
-                District
+                {t('district')}
               </label>
 
               <input
@@ -355,7 +355,7 @@ const CaseEntry = () => {
             <div>
 
               <label className={labelClass}>
-                Court
+                {t('court')}
               </label>
 
               <input
@@ -483,7 +483,7 @@ const CaseEntry = () => {
             <div className="max-w-md">
 
               <label className={labelClass}>
-                Date of Arrest / Custody Start{' '}
+                {t('custodyStartDate')}{' '}
                 <span className="text-[#B94343]">*</span>
               </label>
 

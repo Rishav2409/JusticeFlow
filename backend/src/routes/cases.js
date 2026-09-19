@@ -54,6 +54,10 @@ router.post('/', async (req, res) => {
     // Run eligibility calculation
     const result = calculateEligibility(caseData, offence);
 
+    const created_by = req.user?.id || null;
+    const created_by_role = req.user?.role || 'POLICE';
+    const verified_by = req.user?.name || 'Registering Officer';
+
     // Insert case into database
     await run(
       `INSERT INTO cases (
@@ -69,9 +73,14 @@ router.post('/', async (req, res) => {
         first_time_offender,
         multiple_pending_cases,
         eligibility_status,
-        eligibility_result
+        eligibility_result,
+        verification_status,
+        verified_by,
+        verified_at,
+        created_by,
+        created_by_role
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'VERIFIED', ?, datetime('now'), ?, ?)`,
       [
         case_number,
         prisoner_name,
@@ -85,7 +94,10 @@ router.post('/', async (req, res) => {
         caseData.firstTimeOffender ? 1 : 0,
         caseData.multiplePendingCases ? 1 : 0,
         result.status,
-        JSON.stringify(result)
+        JSON.stringify(result),
+        verified_by,
+        created_by,
+        created_by_role
       ]
     );
 

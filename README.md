@@ -1,31 +1,41 @@
-# NyayaFlow — Legal-Aid Case Screening Assistant
+# JusticeFlow — Legal-Aid Screening Assistant
 
-> **Review 1 Prototype** — Hackathon MVP
+> **Review 2 Implementation** — Multi-Role Legal-Aid Coordination Platform
 
-A pre-screening and workflow-assistance tool for panel lawyers and legal-aid clinic staff. NyayaFlow helps identify undertrial prisoners who may be approaching or have crossed statutory detention thresholds, enabling faster case triage and follow-up.
-
----
-
-## ⚖️ Important Disclaimer
-
-> **This prototype provides preliminary case screening based on configured statutory rules. It does not constitute legal advice, determine final entitlement to bail, or replace review by a qualified legal professional or competent court.**
-
-All case data in this demo is **synthetic**. No real prisoner data is used.
+A pre-screening and workflow-coordination tool connecting **Panel Lawyers**, **Police Stations**, and **Undertrial Families**. JusticeFlow helps identify undertrial prisoners who may be approaching or have crossed statutory detention thresholds, calculates preliminary eligibility under Section 479 BNSS / 436A CrPC, and facilitates timely legal-aid intervention.
 
 ---
 
-## 🔍 Problem
+## 🚀 Review 2 Features
 
-There is an operational gap between *identifying potentially eligible undertrial prisoners* and *taking the next legal-aid action* (lawyer review, preparing an application). Existing UTRC / e-Prisons / e-Courts processes are **not replaced** by this project.
+1. **Role-Based Authentication & Workflows**:
+   - **Lawyer Portal**: Case management, explainable priority queue, assigned legal-aid requests, and preliminary screening.
+   - **Police Portal**: Official case registration (`/police/new-case`), factual verification queue, and investigation lookup.
+   - **Family Member Portal**: Transparent case status check (`JF-1001`), preliminary eligibility feedback, factual lawyer directory, and legal-aid assistance requests.
+2. **Multiple Authenticated Accounts Per Role**:
+   - 12 pre-seeded active accounts with realistic profiles, jurisdictions, and foreign-key connections.
+3. **Reactive Multilingual Interface**:
+   - Instant language switching across **English**, **Hindi (हिंदी)**, and **Tamil (தமிழ்)** persisted in `localStorage` under `justiceflow_language`.
+4. **Deterministic Eligibility Engine**:
+   - 100% deterministic rule calculation strictly matching BNSS 479 / CrPC 436A statutory thresholds.
 
-NyayaFlow sits as a **pre-screening and workflow-assistance layer** that helps a legal-aid worker:
+---
 
-1. Enter case information
-2. Select an offence from a controlled database
-3. Automatically retrieve the statutory maximum punishment
-4. Calculate the relevant detention period
-5. Apply predefined statutory screening rules
-6. Produce an explainable preliminary result
+## 🔑 Demo Login Credentials
+
+| Role | Name | Email | Password | Primary District |
+| :--- | :--- | :--- | :--- | :--- |
+| **Lawyer** | Adv. Ananya Sharma | `ananya.lawyer@justiceflow.demo` | `lawyer123` | Central Delhi |
+| **Lawyer** | Adv. Rahul Verma | `rahul.lawyer@justiceflow.demo` | `lawyer123` | South Delhi / Vellore |
+| **Lawyer** | Adv. Priya Menon | `priya.lawyer@justiceflow.demo` | `lawyer123` | New Delhi / Chennai |
+| **Police** | Off. Arjun Kumar | `arjun.police@justiceflow.demo` | `police123` | PS Central Delhi |
+| **Police** | Off. Kavya Singh | `kavya.police@justiceflow.demo` | `police123` | PS South Delhi |
+| **Police** | Off. Ravi Kumar | `ravi.police@justiceflow.demo` | `police123` | PS New Delhi |
+| **Family** | Ramesh Kumar | `ramesh.family@justiceflow.demo` | `family123` | Central Delhi (Case JF-1001) |
+| **Family** | Sunita Devi | `sunita.family@justiceflow.demo` | `family123` | South Delhi (Case JF-1002) |
+| **Family** | Meena Raj | `meena.family@justiceflow.demo` | `family123` | New Delhi (Case JF-1024) |
+
+*(Legacy credentials `lawyer@justiceflow.demo`, `police@justiceflow.demo`, and `family@justiceflow.demo` are also supported).*
 
 ---
 

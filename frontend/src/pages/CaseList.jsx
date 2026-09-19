@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { caseService } from '../services/api';
+import { getUser } from '../services/auth';
+import { useLanguage } from '../context/LanguageContext';
 import StatusBadge from '../components/StatusBadge';
 
 const CaseList = () => {
+  const user = getUser();
+  const { t } = useLanguage();
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +72,7 @@ const CaseList = () => {
           </p>
 
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-justice-text">
-            All Cases
+            {t('allCases')}
           </h1>
 
           <p className="mt-2 text-base text-justice-secondary">
@@ -77,16 +81,18 @@ const CaseList = () => {
 
         </div>
 
-        <Link
-          to="/add-case"
-          className="inline-flex items-center justify-center gap-2 bg-justice-accent hover:bg-justice-accent-hover text-white px-5 py-3 rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:-translate-y-0.5"
-        >
-          <span className="text-xl leading-none">
-            ＋
-          </span>
+        {user?.role === 'POLICE' && (
+          <Link
+            to="/police/new-case"
+            className="inline-flex items-center justify-center gap-2 bg-justice-accent hover:bg-justice-accent-hover text-white px-5 py-3 rounded-lg text-base font-semibold shadow-md transition-all duration-200 hover:-translate-y-0.5"
+          >
+            <span className="text-xl leading-none">
+              ＋
+            </span>
 
-          New Case
-        </Link>
+            {t('newCase')}
+          </Link>
+        )}
 
       </div>
 

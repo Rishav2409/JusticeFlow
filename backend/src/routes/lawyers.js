@@ -14,14 +14,14 @@ router.use(authenticateToken, requireRole('LAWYER'));
 // =====================================================
 router.get('/priority-queue', async (req, res) => {
   try {
-    const lawyerId = req.user.id;
+    const lawyerId = String(req.user.id);
 
     const rows = await all(
       `SELECT r.*, c.fir_number, c.court, c.district, c.eligibility_status
        FROM legal_aid_requests r
        LEFT JOIN cases c ON r.case_id = c.id
        WHERE r.status IN ('PENDING', 'UNDER_REVIEW')
-         AND (r.lawyer_id = ? OR r.lawyer_id IS NULL OR r.lawyer_id = '' OR r.lawyer_id = 'LAWYER-001')
+         AND r.lawyer_id = ?
        ORDER BY 
          CASE r.priority_level
            WHEN 'HIGH_ATTENTION' THEN 1
@@ -56,13 +56,13 @@ router.get('/priority-queue', async (req, res) => {
 // =====================================================
 router.get('/requests', async (req, res) => {
   try {
-    const lawyerId = req.user.id;
+    const lawyerId = String(req.user.id);
     const { status } = req.query;
 
     let query = `SELECT r.*, c.fir_number, c.court, c.district, c.eligibility_status
                  FROM legal_aid_requests r
                  LEFT JOIN cases c ON r.case_id = c.id
-                 WHERE (r.lawyer_id = ? OR r.lawyer_id IS NULL OR r.lawyer_id = '' OR r.lawyer_id = 'LAWYER-001')`;
+                 WHERE r.lawyer_id = ?`;
     const params = [lawyerId];
 
     if (status && status !== 'ALL') {
@@ -119,7 +119,7 @@ router.get('/requests/:id', async (req, res) => {
 // =====================================================
 router.post('/requests/:id/accept', async (req, res) => {
   try {
-    const lawyerId = req.user.id;
+    const lawyerId = String(req.user.id);
     const lawyerName = req.user.name || 'Assigned Legal-Aid Counsel';
 
     const existing = await get(

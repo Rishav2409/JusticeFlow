@@ -32,7 +32,7 @@ router.get('/lawyers', authenticateToken, async (req, res) => {
         lp.phone as phone
       FROM users u
       JOIN lawyer_profiles lp ON u.id = lp.user_id
-      WHERE u.role = 'LAWYER' AND lp.legal_aid_available = 1
+      WHERE u.role = 'LAWYER' AND lp.legal_aid_available = 1 AND u.id IN ('1', '2', '3')
     `;
     const params = [];
 
@@ -41,7 +41,7 @@ router.get('/lawyers', authenticateToken, async (req, res) => {
       params.push(district);
     }
 
-    query += ` ORDER BY u.name ASC`;
+    query += ` ORDER BY u.id ASC`;
 
     const rows = await all(query, params);
 

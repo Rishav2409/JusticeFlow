@@ -42,35 +42,41 @@ const FamilyDashboard = () => {
     }
   };
 
+  // Default case per family member
+  const getDefaultCase = () => {
+    const uName = (user?.name || '').toLowerCase();
+    const uEmail = (user?.email || '').toLowerCase();
+    const uId = String(user?.id || '');
+    if (uName.includes('sunita') || uEmail.includes('sunita') || uId === '8') {
+      return 'JF-1002';
+    }
+    if (uName.includes('meena') || uEmail.includes('meena') || uId === '9') {
+      return 'JF-1003';
+    }
+    return 'JF-1001';
+  };
+
   // Load lawyers directory
   const fetchLawyers = async () => {
     try {
       const res = await api.get('/legal-aid/lawyers');
-      setLawyers(res.data?.lawyers || []);
+      const list = res.data?.lawyers || [];
+      setLawyers(list);
+      if (list.length > 0 && !selectedLawyer) {
+        setSelectedLawyer(list[0]);
+      }
     } catch (err) {
       console.error('Failed to load lawyers:', err);
     }
   };
 
-  useEffect(() => {
-    fetchMyRequests();
-    fetchLawyers();
-  }, []);
-
-  const handleCaseSearch = async (e) => {
-    e?.preventDefault();
+  const searchCase = async (targetCase) => {
+    const query = (targetCase || caseNumber).trim();
+    if (!query) return;
     setSearchError('');
-    setCaseData(null);
-    setRequestSuccess('');
-
-    if (!caseNumber.trim()) {
-      setSearchError('Please enter a case number.');
-      return;
-    }
-
     setSearchLoading(true);
     try {
-      const res = await api.get(`/family/cases/${encodeURIComponent(caseNumber.trim())}`);
+      const res = await api.get(`/family/cases/${encodeURIComponent(query)}`);
       setCaseData(res.data);
     } catch (err) {
       setSearchError(err.response?.data?.error || 'Case not found. Please check the case number.');
@@ -79,31 +85,52 @@ const FamilyDashboard = () => {
     }
   };
 
+  const handleCaseSearch = async (e, forcedCase) => {
+    e?.preventDefault();
+    setRequestSuccess('');
+    searchCase(forcedCase || caseNumber);
+  };
+
+  useEffect(() => {
+    fetchMyRequests();
+    fetchLawyers();
+    const initialCase = getDefaultCase();
+    setCaseNumber(initialCase);
+    searchCase(initialCase);
+  }, []);
+
   const handleOpenRequestModal = () => {
     setShowRequestModal(true);
-    setSelectedLawyer(null);
+    if (lawyers.length > 0) {
+      setSelectedLawyer(lawyers[0]);
+    }
   };
 
   const handleSubmitRequest = async (e) => {
     e.preventDefault();
     if (!caseData) return;
 
+    if (!selectedLawyer) {
+      alert('Please select one of the designated legal-aid advocates.');
+      return;
+    }
+
     setSubmittingRequest(true);
     try {
       const res = await api.post('/family/legal-aid-requests', {
         case_id: caseData.id,
         case_number: caseData.case_number,
-        selected_lawyer_id: selectedLawyer?.userId || selectedLawyer?.id || null,
+        selected_lawyer_id: selectedLawyer?.id || selectedLawyer?.userId || null,
         family_phone: requestPhone,
         notes: requestNotes,
       });
 
       if (res.data?.success) {
-        setRequestSuccess('Your legal-aid assistance request has been submitted successfully to the legal-aid counsel.');
+        setRequestSuccess(`Your legal-aid assistance request has been submitted successfully to ${selectedLawyer.name}.`);
         setShowRequestModal(false);
         fetchMyRequests();
         // Refresh case data to reflect request
-        handleCaseSearch();
+        searchCase(caseData.case_number);
       }
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to submit request.');
@@ -178,6 +205,56 @@ const FamilyDashboard = () => {
         </div>
       </div>
 
+      {/* Real-time Status Notifications for Family Member */}
+      {myRequests.some((r) => r.status === 'ACCEPTED') && (
+        <div className="rounded-2xl border-2 border-[#4F8A62] bg-[#EEF7F0] p-5 shadow-sm space-y-3">
+          {myRequests
+            .filter((r) => r.status === 'ACCEPTED')
+            .map((req) => (
+              <div key={req.id} className="flex items-start gap-3">
+                <span className="text-3xl">🎉</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-[#4F8A62] text-white px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">
+                      REQUEST ACCEPTED
+                    </span>
+                    <span className="text-xs font-bold text-[#4F8A62]">Case: {req.case_number}</span>
+                  </div>
+                  <p className="text-sm font-bold text-[#2B170D] mt-1">
+                    {req.lawyer_name} has ACCEPTED your legal-aid assistance request!
+                  </p>
+                  <p className="text-xs text-[#5E4B40] mt-0.5">
+                    Undertrial applicant: <span className="font-semibold text-[#2B170D]">{req.prisoner_name}</span>. Counsel has confirmed representation and will prepare the statutory bail application.
+                  </p>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+
+      {myRequests.some((r) => r.status === 'PENDING' || r.status === 'UNDER_REVIEW') && (
+        <div className="rounded-2xl border border-blue-300 bg-blue-50 p-4 shadow-sm space-y-2">
+          {myRequests
+            .filter((r) => r.status === 'PENDING' || r.status === 'UNDER_REVIEW')
+            .map((req) => (
+              <div key={req.id} className="flex items-start gap-3">
+                <span className="text-2xl">⏳</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-blue-600 text-white px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">
+                      Awaiting Review
+                    </span>
+                    <span className="text-xs font-bold text-blue-900">Case: {req.case_number}</span>
+                  </div>
+                  <p className="text-xs text-blue-900 mt-1">
+                    Bail assistance request for <span className="font-semibold">{req.prisoner_name}</span> was submitted to <span className="font-bold">{req.lawyer_name}</span>. The request is currently placed in counsel's Priority Queue awaiting review.
+                  </p>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+
       {/* Success Banner */}
       {requestSuccess && (
         <div className="rounded-xl border border-[#4F8A62] bg-[#EEF7F0] p-4 text-xs font-medium text-[#4F8A62] flex items-center justify-between">
@@ -199,7 +276,7 @@ const FamilyDashboard = () => {
               <span>🔍</span> Check Case Status
             </h2>
             <p className="text-xs text-[#5E4B40] mb-4">
-              Enter the official Case Number (e.g., <span className="font-bold text-[#C65A16]">JF-1001</span>, <span className="font-bold text-[#C65A16]">JF-1002</span>, or <span className="font-bold text-[#C65A16]">JF-1024</span>) to check custody thresholds and legal-aid status.
+              Enter the official Case Number (e.g., <span className="font-bold text-[#C65A16]">JF-1001</span>, <span className="font-bold text-[#C65A16]">JF-1002</span>, or <span className="font-bold text-[#C65A16]">JF-1003</span>) to check custody thresholds and legal-aid status.
             </p>
 
             <form onSubmit={handleCaseSearch} className="flex gap-3">
@@ -229,24 +306,26 @@ const FamilyDashboard = () => {
 
             {/* Quick Demo Case Pills */}
             <div className="mt-3 flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] text-[#806F64] font-semibold">Try sample cases:</span>
+              <span className="text-[11px] text-[#806F64] font-semibold">Undertrial Cases:</span>
               {[
-                { num: 'JF-1001', label: 'Potentially Eligible' },
-                { num: 'JF-1002', label: 'Approaching Threshold' },
-                { num: 'JF-1003', label: 'Not Yet at Threshold' },
-                { num: 'JF-1024', label: 'High Attention (+33d)' },
+                { num: 'JF-1001', name: 'Vikram Malhotra', label: 'Potentially Eligible' },
+                { num: 'JF-1002', name: 'Rajesh Sharma', label: 'Potentially Eligible' },
+                { num: 'JF-1003', name: 'Karan Verma', label: 'Potentially Eligible' },
               ].map((pill) => (
                 <button
                   key={pill.num}
                   type="button"
                   onClick={() => {
                     setCaseNumber(pill.num);
-                    setCaseData(null);
-                    setSearchError('');
+                    searchCase(pill.num);
                   }}
-                  className="rounded-full bg-white border border-[#D8B9A0] px-2.5 py-0.5 text-[11px] font-semibold text-[#5E4B40] hover:border-[#C65A16] hover:text-[#C65A16]"
+                  className={`rounded-full px-3 py-1 text-[11px] font-bold border transition-colors ${
+                    caseNumber === pill.num
+                      ? 'bg-[#C65A16] text-white border-[#C65A16]'
+                      : 'bg-white border-[#D8B9A0] text-[#5E4B40] hover:border-[#C65A16] hover:text-[#C65A16]'
+                  }`}
                 >
-                  {pill.num} ({pill.label})
+                  {pill.num} ({pill.name})
                 </button>
               ))}
             </div>
@@ -364,11 +443,19 @@ const FamilyDashboard = () => {
                 {caseData.is_potentially_eligible && (
                   <div>
                     {caseData.existing_request ? (
-                      <div className="inline-flex items-center gap-2 rounded-lg bg-[#EEF7F0] border border-[#4F8A62] px-4 py-2 text-xs font-bold text-[#4F8A62]">
-                        <span>✓ Request Active ({caseData.existing_request.status})</span>
+                      <div className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-bold ${
+                        caseData.existing_request.status === 'ACCEPTED'
+                          ? 'bg-[#EEF7F0] border-[#4F8A62] text-[#4F8A62]'
+                          : 'bg-blue-50 border-blue-300 text-blue-800'
+                      }`}>
+                        <span>
+                          {caseData.existing_request.status === 'ACCEPTED'
+                            ? `✓ Request Accepted by ${caseData.existing_request.lawyer_name || 'Counsel'}`
+                            : `⏳ Request Submitted to ${caseData.existing_request.lawyer_name || 'Counsel'} (${caseData.existing_request.status})`}
+                        </span>
                         <button
                           onClick={() => setSearchParams({ tab: 'requests' })}
-                          className="underline hover:text-[#2B170D]"
+                          className="underline hover:text-[#2B170D] ml-2"
                         >
                           View Status
                         </button>
@@ -600,61 +687,47 @@ const FamilyDashboard = () => {
             <form onSubmit={handleSubmitRequest} className="space-y-4">
               {/* Lawyer Directory Section */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#2B170D] mb-2">
-                  Select Legal-Aid Lawyer (Factual Directory)
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#2B170D] mb-1">
+                  Select Legal-Aid Lawyer (Designated Legal-Aid Advocates)
                 </label>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {/* Option: General Queue */}
-                  <div
-                    onClick={() => setSelectedLawyer(null)}
-                    className={`
-                      rounded-xl border p-3 cursor-pointer transition-all text-xs
-                      ${selectedLawyer === null
-                        ? 'border-[#C65A16] bg-[#FFF4EC] shadow-sm'
-                        : 'border-[#E8D5C4] hover:bg-[#FFF9F5]'
-                      }
-                    `}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#2B170D]">
-                        🏛️ Route to Available Legal-Aid Duty Counsel (General Queue)
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#C65A16]">
-                        {selectedLawyer === null ? 'Selected' : 'Select'}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-[#5E4B40] mt-1">
-                      Automatically assigns the request to the first available empanelled legal-aid counsel for the district.
-                    </p>
-                  </div>
-
-                  {/* Factual Lawyer Cards */}
-                  {lawyers.map((l) => (
-                    <div
-                      key={l.id}
-                      onClick={() => setSelectedLawyer(l)}
-                      className={`
-                        rounded-xl border p-3 cursor-pointer transition-all text-xs
-                        ${selectedLawyer?.id === l.id
-                          ? 'border-[#C65A16] bg-[#FFF4EC] shadow-sm'
-                          : 'border-[#E8D5C4] hover:bg-[#FFF9F5]'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#2B170D]">{l.name}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#C65A16]">
-                          {selectedLawyer?.id === l.id ? 'Selected' : 'Select'}
-                        </span>
+                <p className="text-[11px] text-[#5E4B40] mb-3">
+                  Please select one of the three designated legal-aid advocates to represent {caseData?.prisoner_name}:
+                </p>
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {lawyers.map((l) => {
+                    const isSelected = selectedLawyer?.id === l.id;
+                    return (
+                      <div
+                        key={l.id}
+                        onClick={() => setSelectedLawyer(l)}
+                        className={`
+                          rounded-xl border-2 p-3.5 cursor-pointer transition-all text-xs
+                          ${isSelected
+                            ? 'border-[#C65A16] bg-[#FFF4EC] shadow-sm'
+                            : 'border-[#E8D5C4] bg-white hover:border-[#D8B9A0] hover:bg-[#FFF9F5]'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className={`h-4 w-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#C65A16] bg-[#C65A16]' : 'border-gray-300'}`}>
+                              {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-white block" />}
+                            </span>
+                            <span className="font-bold text-[#2B170D] text-sm">{l.name}</span>
+                          </div>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${isSelected ? 'bg-[#C65A16] text-white' : 'bg-gray-100 text-[#806F64]'}`}>
+                            {isSelected ? 'Selected' : 'Select'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 text-[11px] text-[#5E4B40] mt-2 pl-6">
+                          <p><span className="text-[#806F64]">Practice:</span> {l.practice_area || l.practiceArea}</p>
+                          <p><span className="text-[#806F64]">Languages:</span> {l.languages}</p>
+                          <p><span className="text-[#806F64]">District:</span> {l.district}</p>
+                          <p><span className="text-[#806F64]">Workload:</span> <span className="font-semibold text-[#4F8A62]">{l.current_workload || l.currentWorkload || 'Low'}</span></p>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-1 text-[11px] text-[#5E4B40] mt-1">
-                        <p><span className="text-[#806F64]">Practice:</span> {l.practice_area}</p>
-                        <p><span className="text-[#806F64]">Languages:</span> {l.languages}</p>
-                        <p><span className="text-[#806F64]">District:</span> {l.district}</p>
-                        <p><span className="text-[#806F64]">Workload:</span> <span className="font-semibold text-[#4F8A62]">{l.current_workload}</span></p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

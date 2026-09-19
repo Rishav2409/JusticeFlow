@@ -294,13 +294,16 @@ async function initReview2() {
     }
   }
 
-  // 3. Seed Review 2 Demo Cases (JF-1001, JF-1002, JF-1003, JF-1024, JF-1027)
+  // Ensure only the 3 real lawyers are in lawyer_profiles
+  await run(`DELETE FROM lawyer_profiles WHERE user_id = 'LAWYER-001'`);
+
+  // 3. Seed Review 2 Demo Cases (JF-1001, JF-1002, JF-1003) - All Potentially Eligible!
   const review2Cases = [
     {
       case_number: 'JF-1001',
-      prisoner_name: 'Ramesh Kumar (Demo)',
-      section: '115(2)', // Voluntarily causing hurt, max 1 year = 365 days, threshold = 182 days
-      custody_start_date: '2025-09-01',
+      prisoner_name: 'Vikram Malhotra',
+      section: '115(2)', // max 1 year = 365 days, threshold = 182 days
+      custody_start_date: '2025-06-01', // ~475 days => POTENTIALLY ELIGIBLE (+293 days)
       delay_days: 0,
       first_time: 0,
       multiple: 0,
@@ -308,15 +311,17 @@ async function initReview2() {
       district: 'Central Delhi',
       court: 'Sessions Court, Tis Hazari',
       lawyer: 'Advocate Ananya Sharma',
-      verification_status: 'PENDING_VERIFICATION',
+      verification_status: 'VERIFIED',
+      verified_by: 'Officer Arjun Kumar',
+      verified_at: '2026-09-18 10:00:00',
       created_by: '4',
       created_by_role: 'POLICE'
     },
     {
       case_number: 'JF-1002',
-      prisoner_name: 'Priya Sharma (Demo)',
+      prisoner_name: 'Rajesh Sharma',
       section: '115(2)',
-      custody_start_date: '2025-10-15',
+      custody_start_date: '2025-06-15', // ~460 days => POTENTIALLY ELIGIBLE (+278 days)
       delay_days: 0,
       first_time: 0,
       multiple: 0,
@@ -324,58 +329,28 @@ async function initReview2() {
       district: 'South Delhi',
       court: 'CMM Court, Saket',
       lawyer: 'Advocate Rahul Verma',
-      verification_status: 'PENDING_VERIFICATION',
+      verification_status: 'VERIFIED',
+      verified_by: 'Officer Kavya Singh',
+      verified_at: '2026-09-18 11:00:00',
       created_by: '5',
       created_by_role: 'POLICE'
     },
     {
       case_number: 'JF-1003',
-      prisoner_name: 'Amit Singh (Demo)',
+      prisoner_name: 'Karan Verma',
       section: '115(2)',
-      custody_start_date: '2026-02-01',
+      custody_start_date: '2025-07-01', // ~445 days => POTENTIALLY ELIGIBLE (+263 days)
       delay_days: 0,
       first_time: 0,
       multiple: 0,
-      fir_number: 'FIR-2026-0089',
-      district: 'East Delhi',
-      court: 'Sessions Court, KKD',
+      fir_number: 'FIR-2025-0089',
+      district: 'Chennai',
+      court: 'Sessions Court, Chennai',
       lawyer: 'Advocate Priya Menon',
-      verification_status: 'PENDING_VERIFICATION',
-      created_by: '4',
-      created_by_role: 'POLICE'
-    },
-    {
-      case_number: 'JF-1024',
-      prisoner_name: 'Suresh Patel (Demo)',
-      section: '115(2)',
-      custody_start_date: '2025-08-15',
-      delay_days: 0,
-      first_time: 0,
-      multiple: 0,
-      fir_number: 'FIR-2025-0556',
-      district: 'Vellore',
-      court: 'Sessions Court, Vellore',
-      lawyer: 'Advocate Rahul Verma',
-      verification_status: 'PENDING_VERIFICATION',
-      created_by: '6',
-      created_by_role: 'POLICE'
-    },
-    {
-      case_number: 'JF-1027',
-      prisoner_name: 'Deepak Verma (Demo)',
-      section: '115(2)',
-      custody_start_date: '2025-10-20',
-      delay_days: 0,
-      first_time: 0,
-      multiple: 0,
-      fir_number: 'FIR-2025-0789',
-      district: 'South-West Delhi',
-      court: 'CMM Court, Dwarka',
-      lawyer: 'Advocate Ananya Sharma',
       verification_status: 'VERIFIED',
-      verified_by: 'Officer Arjun Kumar',
-      verified_at: '2026-09-18 10:30:00',
-      created_by: '4',
+      verified_by: 'Officer Ravi Kumar',
+      verified_at: '2026-09-18 12:00:00',
+      created_by: '6',
       created_by_role: 'POLICE'
     }
   ];
@@ -423,106 +398,41 @@ async function initReview2() {
           c.created_by_role || null
         ]
       );
-    }
-  }
-
-  // 4. Seed Initial Legal-Aid Requests assigned to specific real lawyer user IDs
-  const initialRequests = [
-    {
-      request_id: 'REQ-2026-001',
-      case_number: 'JF-1024',
-      family_member_id: '7',
-      family_member_name: 'Ramesh Kumar',
-      family_member_phone: '+91 98765 11223',
-      lawyer_id: '2', // Advocate Rahul Verma (User ID 2)
-      lawyer_name: 'Advocate Rahul Verma',
-      status: 'PENDING',
-      priority_level: 'HIGH_ATTENTION',
-      priority_reasons: JSON.stringify([
-        'Threshold reached ✓',
-        '33 days beyond configured threshold ✓',
-        'Long custody duration (215 days) ✓',
-        'Request awaiting review (2 days) ✓'
-      ]),
-      request_age_days: 2,
-      created_at: '2026-09-17 14:20:00'
-    },
-    {
-      request_id: 'REQ-2026-002',
-      case_number: 'JF-1001',
-      family_member_id: '7',
-      family_member_name: 'Ramesh Kumar',
-      family_member_phone: '+91 98765 11223',
-      lawyer_id: '1', // Advocate Ananya Sharma (User ID 1)
-      lawyer_name: 'Advocate Ananya Sharma',
-      status: 'PENDING',
-      priority_level: 'HIGH_ATTENTION',
-      priority_reasons: JSON.stringify([
-        'Threshold reached ✓',
-        '18 days beyond configured threshold ✓',
-        'Request awaiting review (1 day) ✓'
-      ]),
-      request_age_days: 1,
-      created_at: '2026-09-18 09:15:00'
-    },
-    {
-      request_id: 'REQ-2026-003',
-      case_number: 'JF-1027',
-      family_member_id: '8',
-      family_member_name: 'Sunita Devi',
-      family_member_phone: '+91 98765 44332',
-      lawyer_id: '3', // Advocate Priya Menon (User ID 3)
-      lawyer_name: 'Advocate Priya Menon',
-      status: 'UNDER_REVIEW',
-      priority_level: 'APPROACHING',
-      priority_reasons: JSON.stringify([
-        'Approaching threshold (32 days remaining)',
-        'Request received today'
-      ]),
-      request_age_days: 0,
-      created_at: '2026-09-19 08:30:00'
-    }
-  ];
-
-  for (const r of initialRequests) {
-    const existing = await get('SELECT id FROM legal_aid_requests WHERE request_id = ?', [r.request_id]);
-    if (!existing) {
-      const caseRow = await get('SELECT * FROM cases WHERE case_number = ?', [r.case_number]);
-      const offence = caseRow ? await get('SELECT * FROM offences WHERE id = ?', [caseRow.offence_id]) : null;
-      const elResult = caseRow?.eligibility_result ? JSON.parse(caseRow.eligibility_result) : {};
-
+    } else {
       await run(
-        `INSERT INTO legal_aid_requests (
-          request_id, case_id, case_number, prisoner_name, offence_name,
-          custody_duration_days, configured_threshold_days, days_beyond_threshold,
-          family_member_id, family_member_name, family_member_phone,
-          lawyer_id, lawyer_name, status, priority_level, priority_reasons, request_age_days, notes, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `UPDATE cases
+         SET prisoner_name = ?, fir_number = ?, district = ?, court = ?, lawyer = ?,
+             offence_id = ?, custody_start_date = ?, delay_days = ?, first_time_offender = ?,
+             multiple_pending_cases = ?, eligibility_status = ?, eligibility_result = ?,
+             verification_status = ?, verified_by = ?, verified_at = ?,
+             created_by = ?, created_by_role = ?
+         WHERE case_number = ?`,
         [
-          r.request_id,
-          caseRow ? caseRow.id : 1,
-          r.case_number,
-          caseRow ? caseRow.prisoner_name : 'Demo Prisoner',
-          offence ? `${offence.section} ${offence.law_code} (${offence.offence_name})` : 'Under configured section',
-          elResult.creditedDetentionDays || 200,
-          elResult.thresholdDays || 180,
-          elResult.daysOverThreshold || 20,
-          r.family_member_id,
-          r.family_member_name,
-          r.family_member_phone,
-          r.lawyer_id,
-          r.lawyer_name,
-          r.status,
-          r.priority_level,
-          r.priority_reasons,
-          r.request_age_days,
-          'Seeded test request for priority queue',
-          r.created_at,
-          r.created_at
+          c.prisoner_name,
+          c.fir_number,
+          c.district,
+          c.court,
+          c.lawyer,
+          offence.id,
+          c.custody_start_date,
+          c.delay_days,
+          c.first_time,
+          c.multiple,
+          result.status,
+          JSON.stringify(result),
+          c.verification_status,
+          c.verified_by || null,
+          c.verified_at || null,
+          c.created_by || null,
+          c.created_by_role || null,
+          c.case_number
         ]
       );
     }
   }
+
+  // 4. Clean up old test requests so family members have a clean slate to send requests to any of the 3 lawyers
+  await run(`DELETE FROM legal_aid_requests`);
 
   console.log('Multiple demo users, lawyer_profiles, and Review 2 data initialized successfully.');
 }

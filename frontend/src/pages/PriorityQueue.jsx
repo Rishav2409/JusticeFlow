@@ -115,6 +115,23 @@ const PriorityQueue = () => {
         </div>
       </div>
 
+      {/* Real-time Incoming Notification Alert */}
+      {queue.length > 0 && (
+        <div className="rounded-2xl border-2 border-[#C65A16] bg-[#FFF4EC] p-5 shadow-md space-y-2">
+          <div className="flex items-start gap-3">
+            <span className="text-3xl">🔔</span>
+            <div className="flex-1">
+              <h3 className="text-base font-bold text-[#2B170D]">
+                New Bail Assistance Requests Awaiting Your Review ({queue.length})
+              </h3>
+              <p className="text-xs text-[#5E4B40] mt-0.5">
+                Family members have submitted legal-aid representation requests specifically to you. Review the statutory detention metrics below and click <span className="font-bold text-[#4F8A62]">[Accept Request]</span> to confirm counsel representation.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action Notification */}
       {actionMessage && (
         <div className="rounded-xl border border-[#4F8A62] bg-[#EEF7F0] p-4 text-xs font-bold text-[#4F8A62] flex items-center justify-between">

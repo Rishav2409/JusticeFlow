@@ -66,10 +66,11 @@ router.get('/cases/:caseNumber', async (req, res) => {
       statusLabel = 'STATUTORILY EXCLUDED';
     }
 
-    // Check if an active legal aid request already exists for this case
+    // Check if an active legal aid request already exists for this case by this family member
     const existingRequest = await get(
-      `SELECT * FROM legal_aid_requests WHERE case_id = ? AND status IN ('PENDING', 'UNDER_REVIEW', 'ACCEPTED')`,
-      [caseRow.id]
+      `SELECT * FROM legal_aid_requests 
+       WHERE case_id = ? AND family_member_id = ? AND status IN ('PENDING', 'UNDER_REVIEW', 'ACCEPTED')`,
+      [caseRow.id, String(req.user.id)]
     );
 
     res.json({
@@ -159,18 +160,19 @@ router.post('/legal-aid-requests', async (req, res) => {
     priorityReasons.push('Request awaiting lawyer review ✓');
 
     // Lawyer assignment
-    let lawyerName = 'Legal-Aid Duty Queue';
-    if (selected_lawyer_id) {
-      let lawyerRow = await get('SELECT name FROM users WHERE id = ?', [selected_lawyer_id]);
+    const selectedLawyerIdStr = selected_lawyer_id ? String(selected_lawyer_id) : null;
+    let lawyerName = 'Assigned Legal-Aid Counsel';
+    if (selectedLawyerIdStr) {
+      let lawyerRow = await get('SELECT name FROM users WHERE id = ?', [selectedLawyerIdStr]);
       if (!lawyerRow) {
-        lawyerRow = await get('SELECT name FROM lawyers WHERE id = ?', [selected_lawyer_id]);
+        lawyerRow = await get('SELECT name FROM lawyers WHERE id = ?', [selectedLawyerIdStr]);
       }
       if (lawyerRow) lawyerName = lawyerRow.name;
     }
 
     const requestId = `REQ-${Date.now().toString().slice(-6)}`;
     const familyMemberName = req.user.name || 'Family Member';
-    const familyMemberId = req.user.id;
+    const familyMemberId = String(req.user.id);
 
     await run(
       `INSERT INTO legal_aid_requests (
@@ -191,7 +193,7 @@ router.post('/legal-aid-requests', async (req, res) => {
         familyMemberId,
         familyMemberName,
         family_phone || '+91 98765 00000',
-        selected_lawyer_id || null,
+        selectedLawyerIdStr,
         lawyerName,
         'PENDING',
         priorityLevel,
@@ -227,9 +229,9 @@ router.get('/legal-aid-requests', async (req, res) => {
   try {
     const rows = await all(
       `SELECT * FROM legal_aid_requests
-       WHERE family_member_id = ? OR family_member_id = 'FAMILY-001'
+       WHERE family_member_id = ?
        ORDER BY created_at DESC`,
-      [req.user.id]
+      [String(req.user.id)]
     );
 
     const parsed = rows.map(r => ({
